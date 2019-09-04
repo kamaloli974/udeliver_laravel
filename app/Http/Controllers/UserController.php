@@ -47,31 +47,55 @@ class UserController extends Controller
 
     public function login (Request $request)
     {
-        $email=$request->input('email');
-        $mobile=$request->input('password');
+        $mobile=$request->input('mobile');
+        $otp=$request->input('otp');
 
-        //For Mobile Sign In
-        if (isset($mobile)&&!isset($email)){
-            $user = User::where('mobile', $request->mobile)->first();
-        }
-        //For Email SignIn
-        else if (!isset($mobile)&&isset($email)){
-            $user = User::where('email', $request->email)->first();
-        }else{
-            $user = User::where('email', $request->email)->first();
-        }
-        if ($user) {
-            if (Hash::check($request->password, $user->password)) {
-                $token = $user->createToken('Yoyp Password Grant Client')->accessToken;
+        if(isset($mobile)&&isset($otp)){
+            if (Hash::check($request->otp, $user->password)) {
+                $token = $user->createToken('Roto Password Grant Client')->accessToken;
                 return response()->json(['message'=>"Success",'access_token'=>$token,"code"=>200]);
             } else {
-                $response = "Password missmatch";
+                $response = "Incorrect OTP ";
                 return response()->json(['message'=>$response,"code"=>422]);
             }
+        }else if(!isset($mobile)&&!isset($otp)){
+            $user = User::where('mobile', $request->mobile)->first();
+            if($user){
+                $randomValue=(int)(10000*mt_rand()/mt_getrandmax())."";
+                $difference=abs(strlen($randomValue)-4);
+                if($difference!==0){
+                   $randomValue=substr(rand(10000,90000)."",$difference);
+                }
 
-        } else {
-            $response = 'User does not exist';
-            return response()->json(['message'=>$response,"code"=>422]);
+                $user->password=Hash::make($randomValue);
+                $user->save();
+                $message="Please don't share this OTP with anyone. Your OPT is : "+$randomValue;
+                $message=urlencode($message);
+                $url="http://onextel.in/shn/api/pushsms.php?usr=adwrapp2017&key=010921ro0thdspCNUIZqFcItFFRaH1&sndr=YOYPIN&ph=".$request->mobile."&text=".$message."&rpt=1";
+                $guzzleClient=new Client();
+	            $guzzleClient->request('GET',$url);
+                return response()->json(['message'=>'Success',"code"=>200]);
+            }else{
+                $newUser=new User();
+                $newUser->mobile=$mobile;
+                $newUser->is_new_user=1;
+                
+                $randomValue=(int)(10000*mt_rand()/mt_getrandmax())."";
+                $difference=abs(strlen($randomValue)-4);
+                if($difference!==0){
+                   $randomValue=substr(rand(10000,90000)."",$difference);
+                }
+                
+                $newUser->password=Hash::make($randomValue);
+                $user->save();
+               
+                $message="Please don't share this OTP with anyone. Your OPT is : "+$randomValue;
+                $message=urlencode($message);
+                $url="http://onextel.in/shn/api/pushsms.php?usr=adwrapp2017&key=010921ro0thdspCNUIZqFcItFFRaH1&sndr=YOYPIN&ph=".$request->mobile."&text=".$message."&rpt=1";
+                $guzzleClient=new Client();
+                $guzzleClient->request('GET',$url);
+                return response()->json(['message'=>'Success',"code"=>200]);
+            }
         }
     }
 
