@@ -51,14 +51,15 @@ class UserController extends Controller
         $otp=$request->input('otp');
 
         if(isset($mobile)&&isset($otp)){
-            if (Hash::check($request->otp, $user->password)) {
+             $user = User::where('mobile', $request->mobile)->first();
+	    if (Hash::check($request->otp, $user->password)) {
                 $token = $user->createToken('Roto Password Grant Client')->accessToken;
                 return response()->json(['message'=>"Success",'access_token'=>$token,"code"=>200]);
             } else {
                 $response = "Incorrect OTP ";
                 return response()->json(['message'=>$response,"code"=>422]);
             }
-        }else if(!isset($mobile)&&!isset($otp)){
+        }else if(isset($mobile)&&!isset($otp)){
             $user = User::where('mobile', $request->mobile)->first();
             if($user){
                 $randomValue=(int)(10000*mt_rand()/mt_getrandmax())."";
@@ -69,12 +70,12 @@ class UserController extends Controller
 
                 $user->password=Hash::make($randomValue);
                 $user->save();
-                $message="Please don't share this OTP with anyone. Your OPT is : "+$randomValue;
+                $message="Please don't share this OTP with anyone. Your OTP is : ".$randomValue;
                 $message=urlencode($message);
-                $url="http://onextel.in/shn/api/pushsms.php?usr=adwrapp2017&key=010921ro0thdspCNUIZqFcItFFRaH1&sndr=YOYPIN&ph=".$request->mobile."&text=".$message."&rpt=1";
+                $url="http://onextel.in/shn/api/pushsms.php?usr=adwrapp2017&key=010921ro0thdspCNUIZqFcItFFRaH1&sndr=ROTOCB&ph=".$request->mobile."&text=".$message."&rpt=1";
                 $guzzleClient=new Client();
-	            $guzzleClient->request('GET',$url);
-                return response()->json(['message'=>'Success',"code"=>200]);
+	        $guzzleClient->request('GET',$url);
+                return response()->json(['message'=>'Success',"code"=>200,"otp"=>$randomValue]);
             }else{
                 $newUser=new User();
                 $newUser->mobile=$mobile;
@@ -87,14 +88,14 @@ class UserController extends Controller
                 }
                 
                 $newUser->password=Hash::make($randomValue);
-                $user->save();
+                $newUser->save();
                
-                $message="Please don't share this OTP with anyone. Your OPT is : "+$randomValue;
+                $message="Please don't share this OTP with anyone. Your OTP is : ".$randomValue;
                 $message=urlencode($message);
-                $url="http://onextel.in/shn/api/pushsms.php?usr=adwrapp2017&key=010921ro0thdspCNUIZqFcItFFRaH1&sndr=YOYPIN&ph=".$request->mobile."&text=".$message."&rpt=1";
+                $url="http://onextel.in/shn/api/pushsms.php?usr=adwrapp2017&key=010921ro0thdspCNUIZqFcItFFRaH1&sndr=ROTOCB&ph=".$request->mobile."&text=".$message."&rpt=1";
                 $guzzleClient=new Client();
                 $guzzleClient->request('GET',$url);
-                return response()->json(['message'=>'Success',"code"=>200]);
+                return response()->json(['message'=>'Success',"code"=>200,"otp"=>$randomValue]);
             }
         }
     }
@@ -116,25 +117,18 @@ class UserController extends Controller
         $user=Auth::user();
         $token = $request->user()->token();
         if ($user) {
+	    $fullName=$request->input('name');
             $email=$request->input('email');
-            $password=$request->input('password');
-            $mobile=$request->input('mobile');
             $gender=$request->input('gender');
             $dateOfBirth=$request->input('date_of_birth');
-            $hashPassword=Hash::make($password);
-        if (Hash::check($password,$user->password)) {
             $user->email=$email;
-            $user->mobile=$mobile;
             $user->gender=$gender;
             $user->date_of_birth=$dateOfBirth;
+	    $user->name=$fullName;
+	    $user->is_new_user=$request->input("is_new_user");		
+	    $user->referral_code=$request->input("referral_code");
             $user->save();
-            $token = $request->user()->token();
-            $token->revoke();
-            $token = $user->createToken('Yoyp Password Grant Client')->accessToken;
-            return response()->json(['message'=>"Success",'access_token'=>$token,"code"=>200,"result"=>$user]);
-        }else{
-            return response()->json(['message'=>"The password you provided does't match. Please try again.","code"=>423,"password"=>$hashPassword,"userPassword"=>$user->password]);
-        }
+            return response()->json(['message'=>"Your request is completed successfully","code"=>200,"result"=>$user]);
         }else {
             return response()->json(['message'=>"User does't exist","code"=>422]);
         }

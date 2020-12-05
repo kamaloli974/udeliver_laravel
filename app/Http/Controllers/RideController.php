@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth; 
 use App\RideRequest;
-
+use App\Testing;
 class RideController extends Controller
 {
     public function requestRide(Request $request){
@@ -47,5 +47,13 @@ class RideController extends Controller
         }else{
             return response()->json(['message'=>"You are not authorized user. Please logout and sign in again. Thnak you","code"=>423]);
         }
+    }
+    public function getEvent(Request $request){
+	$eventType=$request->input('payload');
+	$eventType=json_encode($eventType,true);
+	$testing=new Testing();
+	$testing->data=$eventType;
+	$testing->save();
+	return response()->json($eventType);
     }
 }

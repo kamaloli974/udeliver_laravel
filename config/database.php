@@ -42,11 +42,11 @@ return [
 
         'mysql' => [
             'driver' => 'mysql',
-            'host' => env('DB_HOST', 'yoyp-instance.cnuyclzuhprr.us-east-2.rds.amazonaws.com'),
+            'host' => env('DB_HOST', 'http://localhost'),
             'port' => env('DB_PORT', '3306'),
-            'database' => env('DB_DATABASE', 'yoyp'),
-            'username' => env('DB_USERNAME', 'yoyp'),
-            'password' => env('DB_PASSWORD', 'yoyp-12341'),
+            'database' => env('DB_DATABASE', 'rotocab'),
+            'username' => env('DB_USERNAME', 'root'),
+            'password' => env('DB_PASSWORD', 'rotocab@123451'),
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',

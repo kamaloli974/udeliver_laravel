@@ -55,5 +55,12 @@ class PaymentController extends Controller
         $user->wallet=($user->wallet)+($request->input('credit'));
 	return response()->json(["message"=>"Your transaction is successfully completed. Thank you for user our service.","code"=>200,"wallet"=>$user->wallet]);
     }
+   
+    public function addMoney(Request $request){
+	$user=Auth::user();
+	$user->wallet=($user->wallet)+($request->input('wallet'));
+	$user->save();
+	return response()->json(["message"=>"Your transaction is successfully completed. Thank you for user our service.","code"=>200,"wallet"=>$user->wallet]);
+    }
 
 }

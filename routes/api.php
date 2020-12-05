@@ -36,5 +36,7 @@ Route::middleware('auth:api')->post('/upload_kyc_document',["uses"=>"UserControl
 Route::middleware('auth:api')->get('/get_kyc',["uses"=>"UserController@getKyc"]);
 Route::middleware('auth:api')->post('/get_checksum',["uses"=>"PaymentController@getChecksum"]);
 Route::middleware('auth:api')->post('/credit_transaction',["uses"=>"PaymentController@creditTransaction"]);
+Route::middleware('auth:api')->post('/add_money',["uses"=>"PaymentController@addMoney"]);
 
 Route::get('send_sms',["uses"=>"UserController@sendSms"]);
+Route::post('get_event',["uses"=>"RideController@getEvent"]);
